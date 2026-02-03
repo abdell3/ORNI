@@ -1,8 +1,20 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService, TokenPair } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Role } from './role.enum';
+import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +42,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async logout(@Body() dto: RefreshTokenDto): Promise<void> {
     await this.authService.logout(dto.refreshToken);
+  }
+
+  @Get('admin-only')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  adminOnly(): { message: string } {
+    return { message: 'Réservé aux administrateurs' };
   }
 }

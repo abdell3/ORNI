@@ -22,12 +22,8 @@ services:
       - db
     ports:
       - "3002:3000"
-    environment:
-      DATABASE_URL: postgresql://postgres:orni_admin159@db:5432/orni_db
-      JWT_ACCESS_SECRET: 1585395257
-      JWT_REFRESH_SECRET: TestRefresh153
-      JWT_ACCESS_EXPIRATION: 15m
-      JWT_REFRESH_EXPIRATION: 7d
+    env_file:
+      - ../../apps/backend/.env
     networks:
       - orni-network
 

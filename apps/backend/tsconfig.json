@@ -13,7 +13,10 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
-    // "baseUrl": "./",
+    "baseUrl": "./",
+    "paths": {
+      "prisma/*": ["prisma/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,

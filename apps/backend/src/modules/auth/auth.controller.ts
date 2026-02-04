@@ -13,8 +13,8 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { Role } from './role.enum';
-import { Roles } from './roles.decorator';
+import { Role } from './enums/role.enum';
+import { Roles } from './decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {

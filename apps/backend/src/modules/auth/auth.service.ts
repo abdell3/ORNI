@@ -105,7 +105,7 @@ export class AuthService {
     if (!user?.refreshToken) {
       throw new UnauthorizedException('Token invalide ou expiré');
     }
-    const storedHash = user.refreshToken as string;
+    const storedHash = user.refreshToken;
     const tokenMatches = await bcrypt.compare(refreshToken, storedHash);
     if (!tokenMatches) {
       throw new UnauthorizedException('Token invalide ou expiré');
@@ -131,7 +131,7 @@ export class AuthService {
       if (!user?.refreshToken) {
         return;
       }
-      const storedHash = user.refreshToken as string;
+      const storedHash = user.refreshToken;
       const tokenMatches = await bcrypt.compare(refreshToken, storedHash);
       if (tokenMatches) {
         await this.prisma.user.update({

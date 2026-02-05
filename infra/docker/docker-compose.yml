@@ -18,6 +18,9 @@ services:
       context: ../../apps/backend
       dockerfile: Dockerfile
     container_name: orni-backend
+    volumes:
+      - ../../apps/backend:/app
+      - /app/node_modules
     depends_on:
       - db
     ports:

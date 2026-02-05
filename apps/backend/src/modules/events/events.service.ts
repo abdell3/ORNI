@@ -45,8 +45,13 @@ export class EventsService {
       date?: Date;
       location?: string;
       capacity?: number;
-    } = { ...data };
-    if (data.date) updateData.date = new Date(data.date);
+    } = {
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.date !== undefined && { date: new Date(data.date) }),
+      ...(data.location !== undefined && { location: data.location }),
+      ...(data.capacity !== undefined && { capacity: data.capacity }),
+    };
     return this.eventsRepository.update(id, updateData);
   }
 

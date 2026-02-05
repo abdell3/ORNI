@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Event, Reservation, User } from '@prisma/client';
 import { UsersRepository } from './repositories/users.repository';
 
 export type UserProfile = Omit<User, 'password' | 'refreshToken'>;
+
+export type UserReservation = Reservation & { event: Event };
 
 @Injectable()
 export class UsersService {
@@ -24,7 +26,20 @@ export class UsersService {
     };
   }
 
-  async getReservations(userId: string) {
+  async getReservations(userId: string): Promise<UserReservation[]> {
     return this.usersRepository.findReservationsByUserId(userId);
+  }
+
+  async getAllUsers(): Promise<UserProfile[]> {
+    const users = await this.usersRepository.findAll();
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
   }
 }

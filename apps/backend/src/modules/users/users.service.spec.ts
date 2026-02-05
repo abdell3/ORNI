@@ -7,6 +7,7 @@ import { UsersService } from './users.service';
 describe('UsersService', () => {
   let service: UsersService;
   let repository: {
+    findAll: jest.Mock;
     findById: jest.Mock;
     findReservationsByUserId: jest.Mock;
   };
@@ -47,6 +48,7 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
+      findAll: jest.fn(),
       findById: jest.fn(),
       findReservationsByUserId: jest.fn(),
     };
@@ -58,7 +60,7 @@ describe('UsersService', () => {
       ],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
+    service = module.get(UsersService);
     repository = mockRepository;
   });
 
@@ -116,6 +118,41 @@ describe('UsersService', () => {
       expect(repository.findReservationsByUserId).toHaveBeenCalledWith(
         'user-id',
       );
+    });
+  });
+
+  describe('getAllUsers', () => {
+    it('should return all users without password and refreshToken', async () => {
+      const users = [
+        mockUser,
+        { ...mockUser, id: 'user-2', email: 'u2@test.com' },
+      ];
+      repository.findAll.mockResolvedValue(users);
+
+      const result = await service.getAllUsers();
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).not.toHaveProperty('password');
+      expect(result[0]).not.toHaveProperty('refreshToken');
+      expect(result[0]).toEqual(
+        expect.objectContaining({
+          id: mockUser.id,
+          email: mockUser.email,
+          role: mockUser.role,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+        }),
+      );
+      expect(repository.findAll).toHaveBeenCalled();
+    });
+
+    it('should return empty array when no users exist', async () => {
+      repository.findAll.mockResolvedValue([]);
+
+      const result = await service.getAllUsers();
+
+      expect(result).toEqual([]);
+      expect(repository.findAll).toHaveBeenCalled();
     });
   });
 });

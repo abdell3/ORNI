@@ -36,3 +36,4 @@ volumes:
 networks:
   orni-network:
     driver: bridge
+

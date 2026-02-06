@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -8,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { StreamableFile } from '@nestjs/common';
 import { Request } from 'express';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
@@ -24,6 +27,20 @@ interface RequestWithUser extends Request {
 @Controller('reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
+
+  @Get(':id/ticket')
+  @UseGuards(JwtAuthGuard)
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename="ticket.pdf"')
+  async getTicket(
+    @Req() req: RequestWithUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<StreamableFile> {
+    const userId: string = req.user.sub;
+    const role: string = req.user.role;
+    const buffer = await this.reservationsService.getTicket(id, userId, role);
+    return new StreamableFile(buffer);
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)

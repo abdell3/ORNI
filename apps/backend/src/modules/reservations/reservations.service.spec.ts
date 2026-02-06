@@ -33,7 +33,29 @@ describe('ReservationsService', () => {
     eventId: 'event-id',
     status: ReservationStatus.PENDING,
     event: mockEvent,
-    user: { id: 'user-id' },
+    user: {
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@test.com',
+    },
+  };
+
+  const mockConfirmedReservation = {
+    ...mockReservation,
+    status: ReservationStatus.CONFIRMED,
+    event: {
+      ...mockEvent,
+      title: 'Test Event',
+      date: new Date(),
+      location: 'Paris',
+    },
+    user: {
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@test.com',
+    },
   };
 
   beforeEach(async () => {
@@ -256,6 +278,65 @@ describe('ReservationsService', () => {
       await expect(
         service.cancelByParticipant('res-id', 'user-id'),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getTicket', () => {
+    it('should throw NotFoundException when reservation does not exist', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.getTicket('unknown-id', 'user-id', 'PARTICIPANT'),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.getTicket('unknown-id', 'user-id', 'PARTICIPANT'),
+      ).rejects.toThrow('Réservation non trouvée');
+    });
+
+    it('should throw BadRequestException when reservation is not CONFIRMED', async () => {
+      repository.findById.mockResolvedValue(mockReservation);
+
+      await expect(
+        service.getTicket('res-id', 'user-id', 'PARTICIPANT'),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getTicket('res-id', 'user-id', 'PARTICIPANT'),
+      ).rejects.toThrow(
+        "Le ticket n'est disponible que pour les réservations confirmées",
+      );
+    });
+
+    it("should throw ForbiddenException when participant accesses someone else's ticket", async () => {
+      repository.findById.mockResolvedValue(mockConfirmedReservation);
+
+      await expect(
+        service.getTicket('res-id', 'other-user-id', 'PARTICIPANT'),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.getTicket('res-id', 'other-user-id', 'PARTICIPANT'),
+      ).rejects.toThrow("Vous ne pouvez accéder qu'à vos propres tickets");
+    });
+
+    it('should return PDF buffer for valid ticket (participant own reservation)', async () => {
+      repository.findById.mockResolvedValue(mockConfirmedReservation);
+
+      const result = await service.getTicket(
+        'res-id',
+        'user-id',
+        'PARTICIPANT',
+      );
+
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('should return PDF buffer for valid ticket (admin)', async () => {
+      repository.findById.mockResolvedValue(mockConfirmedReservation);
+
+      const result = await service.getTicket('res-id', 'any-user-id', 'ADMIN');
+
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBeGreaterThan(0);
     });
   });
 });

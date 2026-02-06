@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15
+    container_name: orni-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: orni_admin159
+      POSTGRES_DB: orni_db
+    volumes:
+      - orni-db-data:/var/lib/postgresql/data
+    networks:
+      - orni-network
+
+  backend:
+    build:
+      context: ../../apps/backend
+      dockerfile: Dockerfile
+    container_name: orni-backend
+    volumes:
+      - ../../apps/backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    ports:
+      - "3002:3000"
+    env_file:
+      - ../../apps/backend/.env
+    networks:
+      - orni-network
+
+volumes:
+  orni-db-data:
+
+networks:
+  orni-network:
+    driver: bridge

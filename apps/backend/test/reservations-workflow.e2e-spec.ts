@@ -5,6 +5,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { PrismaService } from '../src/prisma/prisma.service';
 
 interface LoginResponse {
   accessToken: string;
@@ -24,6 +25,7 @@ interface ReservationResponse {
 
 describe('Reservations Workflow (e2e)', () => {
   let app: INestApplication<App>;
+  let prisma: PrismaService;
 
   const adminCredentials = {
     email: 'admin@orni.local',
@@ -55,9 +57,22 @@ describe('Reservations Workflow (e2e)', () => {
     );
     app.useGlobalFilters(new HttpExceptionFilter());
     await app.init();
+    prisma = moduleFixture.get(PrismaService);
   });
 
   afterAll(async () => {
+    await prisma.reservation.deleteMany({
+      where: {
+        event: {
+          title: { contains: 'E2E' },
+        },
+      },
+    });
+    await prisma.event.deleteMany({
+      where: {
+        title: { contains: 'E2E' },
+      },
+    });
     await app.close();
   });
 

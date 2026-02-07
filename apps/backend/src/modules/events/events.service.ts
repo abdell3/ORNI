@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Event, EventStatus } from '@prisma/client';
+import { ReservationsRepository } from '../reservations/repositories/reservations.repository';
 import { EventFilters } from './repositories/events.repository';
 import { EventsRepository } from './repositories/events.repository';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly eventsRepository: EventsRepository) {}
+  constructor(
+    private readonly eventsRepository: EventsRepository,
+    private readonly reservationsRepository: ReservationsRepository,
+  ) {}
 
   async create(data: {
     title: string;
@@ -38,6 +42,18 @@ export class EventsService {
     const event = await this.eventsRepository.findById(id);
     if (!event) {
       throw new NotFoundException('Événement non trouvé');
+    }
+    if (event.status === EventStatus.CANCELED) {
+      throw new BadRequestException('Canceled events cannot be modified');
+    }
+    if (data.capacity !== undefined) {
+      const confirmedCount =
+        await this.reservationsRepository.countConfirmedByEventId(id);
+      if (data.capacity < confirmedCount) {
+        throw new BadRequestException(
+          'Capacity cannot be lower than confirmed reservations',
+        );
+      }
     }
     const updateData: {
       title?: string;

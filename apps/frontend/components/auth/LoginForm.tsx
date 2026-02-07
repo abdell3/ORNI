@@ -1,12 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { login } from "@/lib/auth/auth.service";
+import { useAuth } from "@/lib/auth/auth.context";
 import type { LoginDto } from "@/lib/auth/auth.types";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login } = useAuth();
   const {
     register: registerField,
     handleSubmit,
@@ -17,7 +19,8 @@ export function LoginForm() {
   async function onSubmit(data: LoginDto) {
     try {
       await login(data);
-      router.push("/events");
+      const from = searchParams.get("from");
+      router.push(from ?? "/events");
       router.refresh();
     } catch (err) {
       const message =

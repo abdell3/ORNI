@@ -1,4 +1,9 @@
-import type { AuthResponse, LoginDto, RegisterDto } from "@/lib/auth/auth.types";
+import type {
+  AuthResponse,
+  LoginDto,
+  RegisterDto,
+  User,
+} from "@/lib/auth/auth.types";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -59,10 +64,10 @@ export async function apiLogout(refreshToken: string): Promise<void> {
   }
 }
 
-export async function getProfile(accessToken: string): Promise<unknown> {
+export async function getProfile(accessToken: string): Promise<User> {
   const res = await fetch(`${BASE}/users/me`, {
     method: "GET",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  return handleResponse(res);
+  return handleResponse<User>(res);
 }

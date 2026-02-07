@@ -4,12 +4,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { ReservationsModule } from '../reservations/reservations.module';
 import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
 import { EventsRepository } from './repositories/events.repository';
 
 @Module({
-  imports: [PrismaModule, PassportModule],
+  imports: [PrismaModule, PassportModule, ReservationsModule],
   controllers: [EventsController],
   providers: [
     EventsRepository,

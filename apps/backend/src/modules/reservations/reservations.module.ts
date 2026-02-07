@@ -19,6 +19,6 @@ import { ReservationsRepository } from './repositories/reservations.repository';
     JwtAuthGuard,
     RolesGuard,
   ],
-  exports: [ReservationsService],
+  exports: [ReservationsService, ReservationsRepository],
 })
 export class ReservationsModule {}

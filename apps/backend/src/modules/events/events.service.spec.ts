@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventStatus } from '@prisma/client';
+import { ReservationsRepository } from '../reservations/repositories/reservations.repository';
 import { EventsRepository } from './repositories/events.repository';
 import { EventsService } from './events.service';
 
@@ -11,6 +12,9 @@ describe('EventsService', () => {
     findById: jest.Mock;
     findManyPublished: jest.Mock;
     update: jest.Mock;
+  };
+  let reservationsRepository: {
+    countConfirmedByEventId: jest.Mock;
   };
 
   const mockEvent = {
@@ -42,16 +46,24 @@ describe('EventsService', () => {
       findManyPublished: jest.fn(),
       update: jest.fn(),
     };
+    const mockReservationsRepository = {
+      countConfirmedByEventId: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EventsService,
         { provide: EventsRepository, useValue: mockRepository },
+        {
+          provide: ReservationsRepository,
+          useValue: mockReservationsRepository,
+        },
       ],
     }).compile();
 
     service = module.get(EventsService);
     repository = mockRepository;
+    reservationsRepository = mockReservationsRepository;
   });
 
   describe('create', () => {
@@ -92,6 +104,50 @@ describe('EventsService', () => {
       expect(result.title).toBe('Updated');
       expect(repository.update).toHaveBeenCalledWith('event-id', {
         title: 'Updated',
+      });
+    });
+
+    it('should throw BadRequestException when event is CANCELED', async () => {
+      repository.findById.mockResolvedValue(mockCanceledEvent);
+
+      await expect(
+        service.update('event-id', { title: 'Updated' }),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.update('event-id', { title: 'Updated' }),
+      ).rejects.toThrow('Canceled events cannot be modified');
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when capacity is lower than confirmed reservations', async () => {
+      repository.findById.mockResolvedValue(mockPublishedEvent);
+      reservationsRepository.countConfirmedByEventId.mockResolvedValue(5);
+
+      await expect(service.update('event-id', { capacity: 3 })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.update('event-id', { capacity: 3 })).rejects.toThrow(
+        'Capacity cannot be lower than confirmed reservations',
+      );
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    it('should update when capacity is greater or equal to confirmed reservations', async () => {
+      repository.findById.mockResolvedValue(mockPublishedEvent);
+      reservationsRepository.countConfirmedByEventId.mockResolvedValue(3);
+      repository.update.mockResolvedValue({
+        ...mockPublishedEvent,
+        capacity: 10,
+      });
+
+      const result = await service.update('event-id', { capacity: 10 });
+
+      expect(result.capacity).toBe(10);
+      expect(
+        reservationsRepository.countConfirmedByEventId,
+      ).toHaveBeenCalledWith('event-id');
+      expect(repository.update).toHaveBeenCalledWith('event-id', {
+        capacity: 10,
       });
     });
 

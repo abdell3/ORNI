@@ -60,3 +60,20 @@ export async function getMyReservations(): Promise<Reservation[]> {
   const json = (await res.json()) as unknown[];
   return json.map((item) => normalizeReservation(item as Record<string, unknown>));
 }
+
+export async function cancelReservation(reservationId: string): Promise<Reservation> {
+  const base = getApiBaseUrl();
+  const res = await fetchWithAuth(`${base}/reservations/${reservationId}/cancel`, {
+    method: "PATCH",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message =
+      typeof (data as { message?: string }).message === "string"
+        ? (data as { message: string }).message
+        : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+  const data = (await res.json()) as Record<string, unknown>;
+  return normalizeReservation(data);
+}

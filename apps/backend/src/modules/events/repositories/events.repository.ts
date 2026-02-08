@@ -31,6 +31,12 @@ export class EventsRepository {
     });
   }
 
+  async findManyAllOrderByDateDesc() {
+    return this.prisma.event.findMany({
+      orderBy: { date: 'desc' },
+    });
+  }
+
   async findManyPublished(filters?: EventFilters) {
     const where: {
       status: EventStatus;

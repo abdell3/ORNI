@@ -30,9 +30,24 @@ services:
     networks:
       - orni-network
 
+  frontend:
+    build:
+      context: ../../apps/frontend
+      dockerfile: Dockerfile
+    container_name: orni-frontend
+    ports:
+      - "3001:3000"
+    env_file:
+      - ../../apps/frontend/.env.docker
+    depends_on:
+      - backend
+    networks:
+      - orni-network
+
 volumes:
   orni-db-data:
 
 networks:
   orni-network:
     driver: bridge
+

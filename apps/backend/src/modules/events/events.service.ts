@@ -99,6 +99,10 @@ export class EventsService {
     });
   }
 
+  async listAllForAdmin(): Promise<Event[]> {
+    return this.eventsRepository.findManyAllOrderByDateDesc();
+  }
+
   async listPublished(filters?: EventFilters): Promise<Event[]> {
     return this.eventsRepository.findManyPublished(filters);
   }

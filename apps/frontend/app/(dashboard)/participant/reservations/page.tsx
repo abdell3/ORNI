@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getMyReservations } from "@/lib/api/reservations";
 import type { Reservation } from "@/lib/types/reservation";
+import { ReservationActions } from "@/components/reservations/ReservationActions";
 
 function formatDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -28,6 +29,12 @@ export default function MyReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const reloadReservations = useCallback(() => {
+    getMyReservations()
+      .then(setReservations)
+      .catch((err) => setError(err instanceof Error ? err.message : "Erreur"));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +95,10 @@ export default function MyReservationsPage() {
               <p className="mt-1 text-sm">
                 Statut : {statusLabel(r.status)}
               </p>
+              <ReservationActions
+                reservation={r}
+                onUpdated={reloadReservations}
+              />
             </li>
           ))}
         </ul>

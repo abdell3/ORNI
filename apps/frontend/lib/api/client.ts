@@ -1,12 +1,15 @@
 import type { Event } from "@/lib/types/event";
 import { EVENTS_ENDPOINT } from "./endpoints/events";
 
-const getBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_URL ?? "";
-};
-
 export function getApiBaseUrl(): string {
-  return getBaseUrl();
+  if (typeof window === "undefined") {
+    return process.env.API_INTERNAL_URL ?? "";
+  }
+  return process.env.NEXT_PUBLIC_API_URL ?? "";
+}
+
+function getBaseUrl(): string {
+  return getApiBaseUrl();
 }
 
 function normalizeEvent(data: Record<string, unknown>): Event {

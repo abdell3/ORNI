@@ -5,6 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { getMyReservations } from "@/lib/api/reservations";
 import type { Reservation } from "@/lib/types/reservation";
 import { ReservationActions } from "@/components/reservations/ReservationActions";
+import { Container } from "@/components/layout/Container";
+import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Card } from "@/components/ui/Card";
 
 function formatDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -55,54 +58,66 @@ export default function MyReservationsPage() {
 
   if (loading) {
     return (
-      <main className="p-6">
-        <h1 className="mb-6 text-2xl font-semibold">Mes réservations</h1>
-        <p className="text-zinc-600">Chargement...</p>
-      </main>
+      <div className="py-10">
+        <Container>
+          <SectionTitle as="h1" className="mb-6">
+            Mes réservations
+          </SectionTitle>
+          <p className="text-[#a1a1aa]">Chargement...</p>
+        </Container>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <main className="p-6">
-        <h1 className="mb-6 text-2xl font-semibold">Mes réservations</h1>
-        <p className="text-red-600">{error}</p>
-      </main>
+      <div className="py-10">
+        <Container>
+          <SectionTitle as="h1" className="mb-6">
+            Mes réservations
+          </SectionTitle>
+          <p className="text-red-400">{error}</p>
+        </Container>
+      </div>
     );
   }
 
   return (
-    <main className="p-6">
-      <h1 className="mb-6 text-2xl font-semibold">Mes réservations</h1>
-      {reservations.length === 0 ? (
-        <p className="text-zinc-600">Aucune réservation pour le moment.</p>
-      ) : (
-        <ul className="space-y-4">
-          {reservations.map((r) => (
-            <li
-              key={r.id}
-              className="rounded border border-zinc-200 p-4"
-            >
-              <Link
-                href={`/events/${r.eventId}`}
-                className="font-medium text-blue-600 underline"
-              >
-                {r.event.title}
-              </Link>
-              <p className="mt-1 text-sm text-zinc-600">
-                {formatDate(r.event.date)} — {r.event.location}
-              </p>
-              <p className="mt-1 text-sm">
-                Statut : {statusLabel(r.status)}
-              </p>
-              <ReservationActions
-                reservation={r}
-                onUpdated={reloadReservations}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+    <div className="py-10 md:py-14">
+      <Container>
+        <SectionTitle as="h1" className="mb-8">
+          Mes réservations
+        </SectionTitle>
+        {reservations.length === 0 ? (
+          <p className="text-[#a1a1aa]">Aucune réservation pour le moment.</p>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+            {reservations.map((r) => (
+              <li key={r.id}>
+                <Card>
+                  <Link
+                    href={`/events/${r.eventId}`}
+                    className="font-semibold text-white hover:text-[#4f46e5] hover:underline"
+                  >
+                    {r.event.title}
+                  </Link>
+                  <p className="mt-1 text-sm text-[#a1a1aa]">
+                    {formatDate(r.event.date)} — {r.event.location}
+                  </p>
+                  <p className="mt-2 text-sm">
+                    <span className="text-[#71717a]">Statut : </span>
+                    <span className="text-white">{statusLabel(r.status)}</span>
+                  </p>
+                  <ReservationActions
+                    reservation={r}
+                    onUpdated={reloadReservations}
+                  />
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Container>
+    </div>
   );
 }

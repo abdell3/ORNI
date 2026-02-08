@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { fetchEventById } from "@/lib/api/client";
 import { ReserveButton } from "@/components/events/ReserveButton";
+import { Container } from "@/components/layout/Container";
+import { Card } from "@/components/ui/Card";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +29,21 @@ export default async function EventDetailPage({ params }: PageProps) {
     const message = err instanceof Error ? err.message : "";
     if (message === "NOT_FOUND") {
       return (
-        <main className="p-6">
-          <h1 className="mb-4 text-xl font-semibold">Événement introuvable</h1>
-          <Link href="/events" className="text-blue-600 underline">
-            Retour à la liste des événements
-          </Link>
-        </main>
+        <div className="py-10">
+          <Container>
+            <Card>
+              <h1 className="text-xl font-semibold text-white">
+                Événement introuvable
+              </h1>
+              <Link
+                href="/events"
+                className="mt-4 inline-block text-[#4f46e5] hover:underline"
+              >
+                Retour à la liste des événements
+              </Link>
+            </Card>
+          </Container>
+        </div>
       );
     }
     throw err;
@@ -41,26 +52,50 @@ export default async function EventDetailPage({ params }: PageProps) {
   const placesRestantes = event.capacity - event.confirmedReservations;
 
   return (
-    <main className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">{event.title}</h1>
-      <p className="mb-2 text-zinc-600">{event.description}</p>
-      <dl className="space-y-2">
-        <dt className="font-medium">Date</dt>
-        <dd className="text-zinc-600">{formatDate(event.date)}</dd>
-        <dt className="font-medium">Lieu</dt>
-        <dd className="text-zinc-600">{event.location}</dd>
-        <dt className="font-medium">Capacité</dt>
-        <dd className="text-zinc-600">{event.capacity}</dd>
-        <dt className="font-medium">Places restantes</dt>
-        <dd className="text-zinc-600">{placesRestantes}</dd>
-      </dl>
-      <ReserveButton eventId={event.id} />
-      <Link
-        href="/events"
-        className="mt-6 inline-block text-blue-600 underline"
-      >
-        Retour à la liste des événements
-      </Link>
-    </main>
+    <div className="py-10 md:py-14">
+      <Container>
+        <div className="mx-auto max-w-2xl">
+          <Card>
+            <h1 className="text-2xl font-bold text-white md:text-3xl">
+              {event.title}
+            </h1>
+            {event.description && (
+              <p className="mt-4 text-[#a1a1aa] leading-relaxed">
+                {event.description}
+              </p>
+            )}
+            <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm font-medium text-[#71717a]">Date</dt>
+                <dd className="mt-0.5 text-white">{formatDate(event.date)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-[#71717a]">Lieu</dt>
+                <dd className="mt-0.5 text-white">{event.location}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-[#71717a]">Capacité</dt>
+                <dd className="mt-0.5 text-white">{event.capacity} places</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-[#71717a]">
+                  Places restantes
+                </dt>
+                <dd className="mt-0.5 text-white">{placesRestantes}</dd>
+              </div>
+            </dl>
+            <div className="mt-8">
+              <ReserveButton eventId={event.id} />
+            </div>
+            <Link
+              href="/events"
+              className="mt-6 inline-block text-sm text-[#a1a1aa] hover:text-white hover:underline"
+            >
+              ← Retour à la liste des événements
+            </Link>
+          </Card>
+        </div>
+      </Container>
+    </div>
   );
 }

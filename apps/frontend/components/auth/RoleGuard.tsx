@@ -4,19 +4,30 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth.context";
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+type RoleGuardProps = {
+  children: React.ReactNode;
+  allowedRoles: string[];
+};
+
+export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     if (loading) return;
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       const loginUrl = new URL("/login", window.location.origin);
       loginUrl.searchParams.set("from", pathname ?? "");
       router.replace(loginUrl.toString());
+      return;
     }
-  }, [loading, isAuthenticated, router, pathname]);
+    const allowed = allowedRoles.includes(user.role);
+    if (!allowed) {
+      router.replace("/");
+      return;
+    }
+  }, [loading, isAuthenticated, user, allowedRoles, router, pathname]);
 
   if (loading) {
     return (
@@ -26,7 +37,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
     return null;
   }
 

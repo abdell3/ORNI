@@ -4,8 +4,7 @@ import type {
   RegisterDto,
   User,
 } from "@/lib/auth/auth.types";
-
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+import { getApiBaseUrl } from "@/lib/api/client";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => ({}));
@@ -20,7 +19,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function apiLogin(body: LoginDto): Promise<AuthResponse> {
-  const res = await fetch(`${BASE}/auth/login`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -31,7 +30,7 @@ export async function apiLogin(body: LoginDto): Promise<AuthResponse> {
 export async function apiRegister(
   body: RegisterDto
 ): Promise<{ id: string; email: string; firstName: string; lastName: string; role: string }> {
-  const res = await fetch(`${BASE}/auth/register`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -40,7 +39,7 @@ export async function apiRegister(
 }
 
 export async function apiRefresh(refreshToken: string): Promise<AuthResponse> {
-  const res = await fetch(`${BASE}/auth/refresh`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),
@@ -49,7 +48,7 @@ export async function apiRefresh(refreshToken: string): Promise<AuthResponse> {
 }
 
 export async function apiLogout(refreshToken: string): Promise<void> {
-  const res = await fetch(`${BASE}/auth/logout`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/logout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),
@@ -65,7 +64,7 @@ export async function apiLogout(refreshToken: string): Promise<void> {
 }
 
 export async function getProfile(accessToken: string): Promise<User> {
-  const res = await fetch(`${BASE}/users/me`, {
+  const res = await fetch(`${getApiBaseUrl()}/users/me`, {
     method: "GET",
     headers: { Authorization: `Bearer ${accessToken}` },
   });

@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/lib/auth/auth.context";
 import type { LoginDto } from "@/lib/auth/auth.types";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,58 +32,39 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div>
-        <label htmlFor="login-email" className="mb-1 block text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="login-email"
-          type="email"
-          autoComplete="email"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("email", {
-            required: "L'email est requis",
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Email invalide",
-            },
-          })}
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-        )}
-      </div>
-      <div>
-        <label
-          htmlFor="login-password"
-          className="mb-1 block text-sm font-medium"
-        >
-          Mot de passe
-        </label>
-        <input
-          id="login-password"
-          type="password"
-          autoComplete="current-password"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("password", {
-            required: "Le mot de passe est requis",
-          })}
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-        )}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+      <Input
+        id="login-email"
+        type="email"
+        autoComplete="email"
+        label="Email"
+        error={errors.email?.message}
+        {...registerField("email", {
+          required: "L'email est requis",
+          pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: "Email invalide",
+          },
+        })}
+      />
+      <Input
+        id="login-password"
+        type="password"
+        autoComplete="current-password"
+        label="Mot de passe"
+        error={errors.password?.message}
+        {...registerField("password", {
+          required: "Le mot de passe est requis",
+        })}
+      />
       {errors.root && (
-        <p className="text-sm text-red-600">{errors.root.message}</p>
+        <p className="text-sm text-red-400" role="alert">
+          {errors.root.message}
+        </p>
       )}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isSubmitting} size="lg" className="mt-2">
         {isSubmitting ? "Connexion..." : "Se connecter"}
-      </button>
+      </Button>
     </form>
   );
 }

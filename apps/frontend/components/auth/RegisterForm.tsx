@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { register as registerUser } from "@/lib/auth/auth.service";
 import type { RegisterDto } from "@/lib/auth/auth.types";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -27,104 +29,65 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div>
-        <label
-          htmlFor="register-firstName"
-          className="mb-1 block text-sm font-medium"
-        >
-          Prénom
-        </label>
-        <input
-          id="register-firstName"
-          type="text"
-          autoComplete="given-name"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("firstName", {
-            required: "Le prénom est requis",
-            minLength: { value: 1, message: "Le prénom est requis" },
-          })}
-        />
-        {errors.firstName && (
-          <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
-        )}
-      </div>
-      <div>
-        <label
-          htmlFor="register-lastName"
-          className="mb-1 block text-sm font-medium"
-        >
-          Nom
-        </label>
-        <input
-          id="register-lastName"
-          type="text"
-          autoComplete="family-name"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("lastName", {
-            required: "Le nom est requis",
-            minLength: { value: 1, message: "Le nom est requis" },
-          })}
-        />
-        {errors.lastName && (
-          <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
-        )}
-      </div>
-      <div>
-        <label htmlFor="register-email" className="mb-1 block text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="register-email"
-          type="email"
-          autoComplete="email"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("email", {
-            required: "L'email est requis",
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Email invalide",
-            },
-          })}
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-        )}
-      </div>
-      <div>
-        <label
-          htmlFor="register-password"
-          className="mb-1 block text-sm font-medium"
-        >
-          Mot de passe
-        </label>
-        <input
-          id="register-password"
-          type="password"
-          autoComplete="new-password"
-          className="w-full rounded border border-zinc-300 px-3 py-2"
-          {...registerField("password", {
-            required: "Le mot de passe est requis",
-            minLength: {
-              value: 8,
-              message: "Le mot de passe doit contenir au moins 8 caractères",
-            },
-          })}
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-        )}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+      <Input
+        id="register-firstName"
+        type="text"
+        autoComplete="given-name"
+        label="Prénom"
+        error={errors.firstName?.message}
+        {...registerField("firstName", {
+          required: "Le prénom est requis",
+          minLength: { value: 1, message: "Le prénom est requis" },
+        })}
+      />
+      <Input
+        id="register-lastName"
+        type="text"
+        autoComplete="family-name"
+        label="Nom"
+        error={errors.lastName?.message}
+        {...registerField("lastName", {
+          required: "Le nom est requis",
+          minLength: { value: 1, message: "Le nom est requis" },
+        })}
+      />
+      <Input
+        id="register-email"
+        type="email"
+        autoComplete="email"
+        label="Email"
+        error={errors.email?.message}
+        {...registerField("email", {
+          required: "L'email est requis",
+          pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: "Email invalide",
+          },
+        })}
+      />
+      <Input
+        id="register-password"
+        type="password"
+        autoComplete="new-password"
+        label="Mot de passe"
+        error={errors.password?.message}
+        {...registerField("password", {
+          required: "Le mot de passe est requis",
+          minLength: {
+            value: 8,
+            message: "Le mot de passe doit contenir au moins 8 caractères",
+          },
+        })}
+      />
       {errors.root && (
-        <p className="text-sm text-red-600">{errors.root.message}</p>
+        <p className="text-sm text-red-400" role="alert">
+          {errors.root.message}
+        </p>
       )}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isSubmitting} size="lg" className="mt-2">
         {isSubmitting ? "Inscription..." : "S'inscrire"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cancelReservation } from "@/lib/api/reservations";
 import { downloadTicket } from "@/lib/api/ticket";
 import type { Reservation } from "@/lib/types/reservation";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   reservation: Reservation;
@@ -53,27 +54,29 @@ export function ReservationActions({ reservation, onUpdated }: Props) {
   }
 
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
-      <button
+    <div className="mt-3 flex flex-wrap gap-2">
+      <Button
         type="button"
+        variant="secondary"
+        size="sm"
         onClick={handleCancel}
         disabled={loadingCancel}
-        className="rounded border border-red-600 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
       >
         {loadingCancel ? "Annulation..." : "Annuler"}
-      </button>
+      </Button>
       {isConfirmed && (
-        <button
+        <Button
           type="button"
+          size="sm"
           onClick={handleDownload}
           disabled={loadingDownload}
-          className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {loadingDownload ? "Téléchargement..." : "Télécharger ticket"}
-        </button>
+        </Button>
       )}
       {errorMessage && (
-        <p className="w-full text-sm text-red-600">{errorMessage}</p>
+        <p className="w-full text-sm text-red-400">{errorMessage}</p>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createReservation } from "@/lib/api/reservations";
 import { useAuth } from "@/lib/auth/auth.context";
+import { Button } from "@/components/ui/Button";
 
 type ReserveButtonProps = {
   eventId: string;
@@ -23,7 +24,9 @@ export function ReserveButton({ eventId }: ReserveButtonProps) {
       await createReservation(eventId);
       setSuccess("Réservation enregistrée.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la réservation.");
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de la réservation."
+      );
     } finally {
       setLoading(false);
     }
@@ -32,29 +35,26 @@ export function ReserveButton({ eventId }: ReserveButtonProps) {
   if (!isAuthenticated) {
     const loginHref = `/login?from=${encodeURIComponent(`/events/${eventId}`)}`;
     return (
-      <p className="mt-4">
-        <Link
-          href={loginHref}
-          className="inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Se connecter pour réserver
-        </Link>
-      </p>
+      <Link href={loginHref}>
+        <Button size="lg">Se connecter pour réserver</Button>
+      </Link>
     );
   }
 
   return (
-    <div className="mt-4">
-      <button
+    <div>
+      <Button
         type="button"
         onClick={handleReserve}
         disabled={loading}
-        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+        size="lg"
       >
         {loading ? "Réservation..." : "Réserver"}
-      </button>
-      {success && <p className="mt-2 text-sm text-green-600">{success}</p>}
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </Button>
+      {success && (
+        <p className="mt-3 text-sm text-emerald-400">{success}</p>
+      )}
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
     </div>
   );
 }

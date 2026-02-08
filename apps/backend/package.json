@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "pretest:e2e": "prisma migrate deploy",
+    "pretest:e2e": "prisma migrate deploy && prisma db seed",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "prisma db seed"
   },

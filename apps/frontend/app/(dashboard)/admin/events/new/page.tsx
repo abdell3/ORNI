@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Alert } from "@/components/ui/Alert";
 
 type FormData = {
   title: string;
@@ -35,7 +36,7 @@ export default function NewEventPage() {
         location: data.location,
         capacity: Number(data.capacity),
       });
-      router.push("/admin/events");
+      router.push("/admin/events?created=1");
       router.refresh();
     } catch (err) {
       setError(
@@ -113,12 +114,12 @@ export default function NewEventPage() {
               valueAsNumber: true,
             })}
           />
-          {errors.root && (
-            <p className="text-sm text-red-400">{errors.root.message}</p>
+          {errors.root?.message && (
+            <Alert type="error" message={errors.root.message} />
           )}
           <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Création..." : "Créer"}
+            <Button type="submit" loading={isSubmitting}>
+              Créer
             </Button>
             <Link href="/admin/events">
               <Button type="button" variant="secondary">

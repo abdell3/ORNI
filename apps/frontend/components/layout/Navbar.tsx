@@ -27,40 +27,47 @@ export function Navbar() {
           ORNI
         </Link>
         <div className="flex items-center gap-4 sm:gap-6">
-          <Link
-            href="/"
-            className="text-sm text-[#a1a1aa] transition hover:text-white"
-          >
-            Accueil
-          </Link>
-          <Link
-            href="/events"
-            className="text-sm text-[#a1a1aa] transition hover:text-white"
-          >
-            Événements
-          </Link>
+          {!showAdmin && (
+            <>
+              <Link
+                href="/"
+                className="text-sm text-[#a1a1aa] transition hover:text-white"
+              >
+                Accueil
+              </Link>
+              <Link
+                href="/events"
+                className="text-sm text-[#a1a1aa] transition hover:text-white"
+              >
+                Événements
+              </Link>
+            </>
+          )}
           {isAuthenticated ? (
             <>
-              {showAdmin && (
+              {showAdmin ? (
                 <Link
                   href="/admin"
                   className="text-sm text-[#a1a1aa] transition hover:text-white"
                 >
                   Admin
                 </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/participant/reservations"
+                    className="text-sm text-[#a1a1aa] transition hover:text-white"
+                  >
+                    Mes réservations
+                  </Link>
+                  <Link
+                    href="/participant"
+                    className="text-sm text-[#a1a1aa] transition hover:text-white"
+                  >
+                    Profil
+                  </Link>
+                </>
               )}
-              <Link
-                href="/participant/reservations"
-                className="text-sm text-[#a1a1aa] transition hover:text-white"
-              >
-                Mes réservations
-              </Link>
-              <Link
-                href="/participant"
-                className="text-sm text-[#a1a1aa] transition hover:text-white"
-              >
-                Profil
-              </Link>
               <Button
                 type="button"
                 variant="secondary"

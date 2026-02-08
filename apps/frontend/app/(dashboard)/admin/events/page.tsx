@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { fetchEvents } from "@/lib/api/client";
-import { cancelEvent, publishEvent } from "@/lib/api/admin";
+import { getAdminEvents, cancelEvent, publishEvent } from "@/lib/api/admin";
 import type { Event } from "@/lib/types/event";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Loader } from "@/components/ui/Loader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Alert } from "@/components/ui/Alert";
 
 function formatDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -18,7 +20,17 @@ function formatDate(isoDate: string): string {
   });
 }
 
+function statusLabel(status: Event["status"]): string {
+  const labels: Record<Event["status"], string> = {
+    DRAFT: "Brouillon",
+    PUBLISHED: "Publié",
+    CANCELED: "Annulé",
+  };
+  return labels[status] ?? status;
+}
+
 export default function AdminEventsPage() {
+  const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +39,7 @@ export default function AdminEventsPage() {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    fetchEvents()
+    getAdminEvents()
       .then(setEvents)
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Erreur")
@@ -43,6 +55,7 @@ export default function AdminEventsPage() {
     setActionLoading(id);
     try {
       await publishEvent(id);
+      router.replace("/admin/events?published=1");
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -52,9 +65,11 @@ export default function AdminEventsPage() {
   }
 
   async function handleCancel(id: string) {
+    if (!confirm("Confirmer l'annulation ?")) return;
     setActionLoading(id);
     try {
       await cancelEvent(id);
+      router.replace("/admin/events?canceled=1");
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -63,13 +78,19 @@ export default function AdminEventsPage() {
     }
   }
 
+  const searchParams = useSearchParams();
+  const created = searchParams.get("created");
+  const updated = searchParams.get("updated");
+  const published = searchParams.get("published");
+  const canceled = searchParams.get("canceled");
+
   if (loading) {
     return (
       <div>
         <SectionTitle as="h1" className="mb-6">
           Gestion des événements
         </SectionTitle>
-        <p className="text-[#a1a1aa]">Chargement...</p>
+        <Loader />
       </div>
     );
   }
@@ -83,22 +104,36 @@ export default function AdminEventsPage() {
         </Link>
       </div>
 
+      {created === "1" && (
+        <Alert type="success" message="Événement créé." className="mb-4" />
+      )}
+      {updated === "1" && (
+        <Alert type="success" message="Événement modifié." className="mb-4" />
+      )}
+      {published === "1" && (
+        <Alert type="success" message="Événement publié." className="mb-4" />
+      )}
+      {canceled === "1" && (
+        <Alert type="success" message="Événement annulé." className="mb-4" />
+      )}
       {error && (
-        <p className="mb-4 text-red-400">{error}</p>
+        <Alert type="error" message={error} className="mb-4" />
       )}
 
       {events.length === 0 ? (
-        <Card>
-          <p className="text-[#a1a1aa]">Aucun événement publié.</p>
-          <Link href="/admin/events/new" className="mt-4 inline-block">
+        <EmptyState
+          title="Aucun événement"
+          description="Créez votre premier événement."
+        >
+          <Link href="/admin/events/new">
             <Button variant="secondary" size="sm">
               Créer un événement
             </Button>
           </Link>
-        </Card>
+        </EmptyState>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] border-collapse">
+          <table className="w-full min-w-[700px] border-collapse">
             <thead>
               <tr className="border-b border-[#2d2d3a]">
                 <th className="pb-3 text-left text-sm font-medium text-[#a1a1aa]">
@@ -112,6 +147,9 @@ export default function AdminEventsPage() {
                 </th>
                 <th className="pb-3 text-left text-sm font-medium text-[#a1a1aa]">
                   Capacité
+                </th>
+                <th className="pb-3 text-left text-sm font-medium text-[#a1a1aa]">
+                  Statut
                 </th>
                 <th className="pb-3 text-right text-sm font-medium text-[#a1a1aa]">
                   Actions
@@ -130,6 +168,9 @@ export default function AdminEventsPage() {
                   </td>
                   <td className="py-3 text-[#a1a1aa]">{event.location}</td>
                   <td className="py-3 text-[#a1a1aa]">{event.capacity}</td>
+                  <td className="py-3 text-[#a1a1aa]">
+                    {statusLabel(event.status)}
+                  </td>
                   <td className="py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/admin/events/${event.id}/edit`}>
@@ -145,11 +186,9 @@ export default function AdminEventsPage() {
                         <Button
                           size="sm"
                           onClick={() => handlePublish(event.id)}
-                          disabled={actionLoading === event.id}
+                          loading={actionLoading === event.id}
                         >
-                          {actionLoading === event.id
-                            ? "Publication..."
-                            : "Publier"}
+                          Publier
                         </Button>
                       )}
                       {event.status !== "CANCELED" && (
@@ -157,10 +196,10 @@ export default function AdminEventsPage() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleCancel(event.id)}
-                          disabled={actionLoading === event.id}
+                          loading={actionLoading === event.id}
                           className="border-red-500/50 text-red-400 hover:bg-red-500/10"
                         >
-                          {actionLoading === event.id ? "..." : "Annuler"}
+                          Annuler
                         </Button>
                       )}
                     </div>
@@ -171,12 +210,6 @@ export default function AdminEventsPage() {
           </table>
         </div>
       )}
-
-      <p className="mt-4 text-sm text-[#71717a]">
-        Seuls les événements publiés sont affichés. Les brouillons créés
-        n&apos;apparaissent pas tant que le backend n&apos;expose pas une liste
-        complète pour l&apos;admin.
-      </p>
     </div>
   );
 }

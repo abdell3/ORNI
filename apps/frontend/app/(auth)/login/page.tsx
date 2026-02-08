@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Card } from "@/components/ui/Card";
+import { LoginSuccessAlert } from "@/components/auth/LoginSuccessAlert";
 
 export default function LoginPage() {
   return (
@@ -10,6 +11,7 @@ export default function LoginPage() {
         <Card className="shadow-xl">
           <h1 className="text-2xl font-bold text-white">Connexion</h1>
           <Suspense fallback={<p className="mt-4 text-[#a1a1aa]">Chargement...</p>}>
+            <LoginSuccessAlert />
             <LoginForm />
           </Suspense>
           <p className="mt-6 border-t border-[#2d2d3a] pt-6 text-sm text-[#a1a1aa]">

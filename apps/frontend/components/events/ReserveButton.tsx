@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createReservation } from "@/lib/api/reservations";
 import { useAuth } from "@/lib/auth/auth.context";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 type ReserveButtonProps = {
   eventId: string;
@@ -22,7 +23,7 @@ export function ReserveButton({ eventId }: ReserveButtonProps) {
     setLoading(true);
     try {
       await createReservation(eventId);
-      setSuccess("Réservation enregistrée.");
+      setSuccess("Réservation confirmée.");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Erreur lors de la réservation."
@@ -42,19 +43,17 @@ export function ReserveButton({ eventId }: ReserveButtonProps) {
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       <Button
         type="button"
         onClick={handleReserve}
-        disabled={loading}
+        loading={loading}
         size="lg"
       >
-        {loading ? "Réservation..." : "Réserver"}
+        Réserver
       </Button>
-      {success && (
-        <p className="mt-3 text-sm text-emerald-400">{success}</p>
-      )}
-      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+      {success && <Alert type="success" message={success} />}
+      {error && <Alert type="error" message={error} />}
     </div>
   );
 }

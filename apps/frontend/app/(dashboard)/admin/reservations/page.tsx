@@ -3,10 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchEvents } from "@/lib/api/client";
 import { getEventReservations, type AdminReservation } from "@/lib/api/admin";
-import { cancelReservation } from "@/lib/api/reservations";
+import {
+  cancelReservation,
+  confirmReservation,
+  refuseReservation,
+} from "@/lib/api/reservations";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Loader } from "@/components/ui/Loader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Alert } from "@/components/ui/Alert";
 
 function formatDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -62,7 +68,37 @@ export default function AdminReservationsPage() {
     load();
   }, [load]);
 
+  async function handleConfirm(id: string) {
+    setActionLoading(id);
+    try {
+      await confirmReservation(id);
+      load();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de la confirmation"
+      );
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleRefuse(id: string) {
+    if (!confirm("Refuser cette réservation ?")) return;
+    setActionLoading(id);
+    try {
+      await refuseReservation(id);
+      load();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erreur lors du refus"
+      );
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   async function handleCancel(id: string) {
+    if (!confirm("Confirmer l'annulation ?")) return;
     setActionLoading(id);
     try {
       await cancelReservation(id);
@@ -82,7 +118,7 @@ export default function AdminReservationsPage() {
         <SectionTitle as="h1" className="mb-6">
           Gestion des réservations
         </SectionTitle>
-        <p className="text-[#a1a1aa]">Chargement...</p>
+        <Loader />
       </div>
     );
   }
@@ -93,12 +129,13 @@ export default function AdminReservationsPage() {
         Gestion des réservations
       </SectionTitle>
 
-      {error && <p className="mb-4 text-red-400">{error}</p>}
+      {error && <Alert type="error" message={error} className="mb-4" />}
 
       {reservations.length === 0 ? (
-        <Card>
-          <p className="text-[#a1a1aa]">Aucune réservation.</p>
-        </Card>
+        <EmptyState
+          title="Aucune réservation"
+          description="Aucune réservation pour le moment."
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse">
@@ -146,17 +183,39 @@ export default function AdminReservationsPage() {
                     {statusLabel(r.status)}
                   </td>
                   <td className="py-3 text-right">
-                    {r.status !== "CANCELED" && r.status !== "REFUSED" && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleCancel(r.id)}
-                        disabled={actionLoading === r.id}
-                        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                      >
-                        {actionLoading === r.id ? "..." : "Annuler"}
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {r.status === "PENDING" && (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => handleConfirm(r.id)}
+                            loading={actionLoading === r.id}
+                          >
+                            Accepter
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleRefuse(r.id)}
+                            loading={actionLoading === r.id}
+                            className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                          >
+                            Refuser
+                          </Button>
+                        </>
+                      )}
+                      {r.status !== "CANCELED" && r.status !== "REFUSED" && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleCancel(r.id)}
+                          loading={actionLoading === r.id}
+                          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                        >
+                          Annuler
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

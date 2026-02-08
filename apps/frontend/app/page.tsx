@@ -7,7 +7,12 @@ import { EventCard } from "@/components/events/EventCard";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const events = await fetchEvents();
+  let events: Awaited<ReturnType<typeof fetchEvents>> = [];
+  try {
+    events = await fetchEvents();
+  } catch {
+    events = [];
+  }
   const featuredEvents = events.slice(0, 6);
 
   return (

@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/auth.context";
 import type { LoginDto } from "@/lib/auth/auth.types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export function LoginForm() {
   const router = useRouter();
@@ -20,9 +21,11 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginDto) {
     try {
-      await login(data);
+      const user = await login(data);
       const from = searchParams.get("from");
-      router.push(from ?? "/events");
+      const redirect =
+        from ?? (user.role === "ADMIN" ? "/admin" : "/events");
+      router.push(redirect);
       router.refresh();
     } catch (err) {
       const message =
@@ -57,13 +60,16 @@ export function LoginForm() {
           required: "Le mot de passe est requis",
         })}
       />
-      {errors.root && (
-        <p className="text-sm text-red-400" role="alert">
-          {errors.root.message}
-        </p>
+      {errors.root?.message && (
+        <Alert type="error" message={errors.root.message} />
       )}
-      <Button type="submit" disabled={isSubmitting} size="lg" className="mt-2">
-        {isSubmitting ? "Connexion..." : "Se connecter"}
+      <Button
+        type="submit"
+        loading={isSubmitting}
+        size="lg"
+        className="mt-2"
+      >
+        Se connecter
       </Button>
     </form>
   );

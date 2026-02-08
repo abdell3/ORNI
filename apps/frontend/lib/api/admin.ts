@@ -3,6 +3,47 @@ import { getApiBaseUrl } from "@/lib/api/client";
 import type { Event } from "@/lib/types/event";
 import { EVENTS_ENDPOINT } from "./endpoints/events";
 
+const ADMIN_PREFIX = "/admin";
+
+export interface AdminStatsDto {
+  totalEvents: number;
+  totalPublishedEvents: number;
+  totalUsers: number;
+  totalReservations: number;
+}
+
+export async function getAdminStats(): Promise<AdminStatsDto> {
+  const base = getApiBaseUrl();
+  const res = await fetchWithAuth(`${base}${ADMIN_PREFIX}/stats`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message =
+      typeof (data as { message?: string }).message === "string"
+        ? (data as { message: string }).message
+        : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+  const data = (await res.json()) as AdminStatsDto;
+  return data;
+}
+
+export async function getAdminEvents(): Promise<Event[]> {
+  const base = getApiBaseUrl();
+  const res = await fetchWithAuth(`${base}${ADMIN_PREFIX}/events`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message =
+      typeof (data as { message?: string }).message === "string"
+        ? (data as { message: string }).message
+        : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+  const json = (await res.json()) as unknown[];
+  return json.map((item) =>
+    normalizeEvent(item as Record<string, unknown>)
+  );
+}
+
 function normalizeEvent(data: Record<string, unknown>): Event {
   return {
     id: String(data.id),

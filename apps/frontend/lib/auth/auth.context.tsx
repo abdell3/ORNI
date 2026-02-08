@@ -22,7 +22,7 @@ export type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (dto: LoginDto) => Promise<void>;
+  login: (dto: LoginDto) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -70,14 +70,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (dto: LoginDto) => {
+    async (dto: LoginDto): Promise<User> => {
       await serviceLogin(dto);
       const token = getStoredAccessToken();
-      if (token) {
-        await loadProfile(token);
+      if (!token) {
+        throw new Error("Connexion échouée");
       }
+      const data = await getProfile(token);
+      const normalized = normalizeUser(data as unknown as Record<string, unknown>);
+      setUser(normalized);
+      return normalized;
     },
-    [loadProfile]
+    []
   );
 
   const logout = useCallback(async () => {

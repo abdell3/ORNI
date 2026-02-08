@@ -46,7 +46,27 @@ export default async function EventDetailPage({ params }: PageProps) {
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="py-10">
+        <Container>
+          <Card>
+            <h1 className="text-xl font-semibold text-white">
+              Erreur de chargement
+            </h1>
+            <p className="mt-2 text-[#a1a1aa]">
+              Impossible de charger l&apos;événement. Vérifiez que le backend est
+              démarré.
+            </p>
+            <Link
+              href="/events"
+              className="mt-4 inline-block text-[#4f46e5] hover:underline"
+            >
+              Retour à la liste des événements
+            </Link>
+          </Card>
+        </Container>
+      </div>
+    );
   }
 
   const placesRestantes = event.capacity - event.confirmedReservations;

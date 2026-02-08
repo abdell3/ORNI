@@ -8,6 +8,9 @@ import { ReservationActions } from "@/components/reservations/ReservationActions
 import { Container } from "@/components/layout/Container";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Card } from "@/components/ui/Card";
+import { Loader } from "@/components/ui/Loader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Alert } from "@/components/ui/Alert";
 
 function formatDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -63,7 +66,7 @@ export default function MyReservationsPage() {
           <SectionTitle as="h1" className="mb-6">
             Mes réservations
           </SectionTitle>
-          <p className="text-[#a1a1aa]">Chargement...</p>
+          <Loader />
         </Container>
       </div>
     );
@@ -76,7 +79,7 @@ export default function MyReservationsPage() {
           <SectionTitle as="h1" className="mb-6">
             Mes réservations
           </SectionTitle>
-          <p className="text-red-400">{error}</p>
+          <Alert type="error" message={error} />
         </Container>
       </div>
     );
@@ -89,7 +92,10 @@ export default function MyReservationsPage() {
           Mes réservations
         </SectionTitle>
         {reservations.length === 0 ? (
-          <p className="text-[#a1a1aa]">Aucune réservation pour le moment.</p>
+          <EmptyState
+            title="Aucune réservation"
+            description="Aucune réservation pour le moment."
+          />
         ) : (
           <ul className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
             {reservations.map((r) => (

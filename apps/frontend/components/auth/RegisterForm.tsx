@@ -6,6 +6,7 @@ import { register as registerUser } from "@/lib/auth/auth.service";
 import type { RegisterDto } from "@/lib/auth/auth.types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function RegisterForm() {
   async function onSubmit(data: RegisterDto) {
     try {
       await registerUser(data);
-      router.push("/login");
+      router.push("/login?registered=1");
       router.refresh();
     } catch (err) {
       const message =
@@ -80,13 +81,16 @@ export function RegisterForm() {
           },
         })}
       />
-      {errors.root && (
-        <p className="text-sm text-red-400" role="alert">
-          {errors.root.message}
-        </p>
+      {errors.root?.message && (
+        <Alert type="error" message={errors.root.message} />
       )}
-      <Button type="submit" disabled={isSubmitting} size="lg" className="mt-2">
-        {isSubmitting ? "Inscription..." : "S'inscrire"}
+      <Button
+        type="submit"
+        loading={isSubmitting}
+        size="lg"
+        className="mt-2"
+      >
+        S&apos;inscrire
       </Button>
     </form>
   );

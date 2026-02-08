@@ -5,6 +5,7 @@ import { cancelReservation } from "@/lib/api/reservations";
 import { downloadTicket } from "@/lib/api/ticket";
 import type { Reservation } from "@/lib/types/reservation";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 type Props = {
   reservation: Reservation;
@@ -15,16 +16,20 @@ export function ReservationActions({ reservation, onUpdated }: Props) {
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [loadingDownload, setLoadingDownload] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const isPending = reservation.status === "PENDING";
   const isConfirmed = reservation.status === "CONFIRMED";
   const hasActions = isPending || isConfirmed;
 
   async function handleCancel() {
+    if (!confirm("Confirmer l'annulation ?")) return;
     setErrorMessage(null);
+    setSuccessMessage(null);
     setLoadingCancel(true);
     try {
       await cancelReservation(reservation.id);
+      setSuccessMessage("Réservation annulée.");
       onUpdated();
     } catch (err) {
       setErrorMessage(
@@ -54,30 +59,33 @@ export function ReservationActions({ reservation, onUpdated }: Props) {
   }
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={handleCancel}
-        disabled={loadingCancel}
-        className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-      >
-        {loadingCancel ? "Annulation..." : "Annuler"}
-      </Button>
-      {isConfirmed && (
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
+          variant="secondary"
           size="sm"
-          onClick={handleDownload}
-          disabled={loadingDownload}
+          onClick={handleCancel}
+          loading={loadingCancel}
+          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
         >
-          {loadingDownload ? "Téléchargement..." : "Télécharger ticket"}
+          Annuler
         </Button>
+        {isConfirmed && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleDownload}
+            loading={loadingDownload}
+          >
+            Télécharger ticket
+          </Button>
+        )}
+      </div>
+      {successMessage && (
+        <Alert type="success" message={successMessage} />
       )}
-      {errorMessage && (
-        <p className="w-full text-sm text-red-400">{errorMessage}</p>
-      )}
+      {errorMessage && <Alert type="error" message={errorMessage} />}
     </div>
   );
 }

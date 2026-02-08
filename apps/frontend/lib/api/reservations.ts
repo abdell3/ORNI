@@ -61,6 +61,42 @@ export async function getMyReservations(): Promise<Reservation[]> {
   return json.map((item) => normalizeReservation(item as Record<string, unknown>));
 }
 
+export async function confirmReservation(reservationId: string): Promise<Reservation> {
+  const base = getApiBaseUrl();
+  const res = await fetchWithAuth(
+    `${base}/reservations/${reservationId}/confirm`,
+    { method: "PATCH" }
+  );
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message =
+      typeof (data as { message?: string }).message === "string"
+        ? (data as { message: string }).message
+        : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+  const data = (await res.json()) as Record<string, unknown>;
+  return normalizeReservation(data);
+}
+
+export async function refuseReservation(reservationId: string): Promise<Reservation> {
+  const base = getApiBaseUrl();
+  const res = await fetchWithAuth(
+    `${base}/reservations/${reservationId}/refuse`,
+    { method: "PATCH" }
+  );
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message =
+      typeof (data as { message?: string }).message === "string"
+        ? (data as { message: string }).message
+        : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+  const data = (await res.json()) as Record<string, unknown>;
+  return normalizeReservation(data);
+}
+
 export async function cancelReservation(reservationId: string): Promise<Reservation> {
   const base = getApiBaseUrl();
   const res = await fetchWithAuth(`${base}/reservations/${reservationId}/cancel`, {
